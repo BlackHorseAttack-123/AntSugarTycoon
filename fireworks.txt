@@ -1,0 +1,48 @@
+// Hệ thống pháo hoa Canvas độc lập cho bản Web
+let fireworks = [];
+
+function startFireworks() {
+    document.getElementById("msg-title").innerText = "VICTORY! PHÁ ĐẢO GAME! 🎆";
+    document.getElementById("msg-title").style.color = "#00ffff";
+    document.getElementById("msg-sub").innerText = "Chúc mừng bạn đã trở thành Vua Kiến Tycoon! Chạm để chơi lại từ đầu";
+    document.getElementById("msg-screen").style.background = "rgba(15,15,25,0.85)";
+    document.getElementById("msg-screen").style.display = "flex";
+    fireworks = [];
+    requestAnimationFrame(animateFireworks);
+}
+
+function animateFireworks() {
+    // Nếu màn hình chờ bị đóng hoặc không phải màn cuối thì dừng vẽ pháo hoa
+    if (document.getElementById("msg-screen").style.display === "none" || currentStage !== maxStages) return;
+    
+    ctx.fillStyle = "rgba(15, 15, 25, 0.2)"; 
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    
+    // Tự động tạo chùm pháo hoa mới ngẫu nhiên
+    if (Math.random() < 0.05 && fireworks.length < 5) {
+        let fx = Math.random() * (WIDTH - 80) + 40;
+        let fy = Math.random() * (HEIGHT - 80) + 40;
+        let p = [];
+        let color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        for (let i = 0; i < 30; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let speed = Math.random() * 3 + 1;
+            p.push({x: fx, y: fy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, alpha: 1, color: color});
+        }
+        fireworks.push(p);
+    }
+    
+    // Cập nhật tọa độ hạt pháo hoa rơi rụng theo trọng lực
+    fireworks.forEach((fw, fIdx) => {
+        fw.forEach(p => {
+            p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.alpha -= 0.02;
+            ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
+        });
+        fireworks[fIdx] = fw.filter(p => p.alpha > 0);
+    });
+    
+    ctx.globalAlpha = 1.0;
+    fireworks = fireworks.filter(fw => fw.length > 0);
+    requestAnimationFrame(animateFireworks);
+}
